@@ -3,6 +3,7 @@ import './Profile.css';
 import Header from '../components/Header';
 
 const Profile = () => {
+  const token = localStorage.getItem("token");
   const [formData, setFormData] = useState({
     name: '',
     location: '',
@@ -69,9 +70,35 @@ const Profile = () => {
     }
   };
 
-  const handleSave = () => {
-    console.log('Saving profile:', formData);
-    alert('Profile saved successfully!');
+  const handleSave = async () => {
+    try {
+      const profileData = {
+        ...formData,
+        profilePhoto: profilePhoto
+      };
+
+      const response = await fetch('http://localhost:3000/api/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(profileData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Profile saved successfully:', result);
+        alert('Profile saved successfully!');
+      } else {
+        const error = await response.json();
+        console.error('Error saving profile:', error);
+        alert('Error saving profile: ' + (error.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Network error:', error);
+      alert('Network error: Unable to save profile');
+    }
   };
 
   const handleDiscard = () => {
@@ -89,7 +116,6 @@ const Profile = () => {
 
   return (
     <div className="profile-container">
-     {/* <Header/> */}
      <Header/>
 
       {/* Main Content */}
@@ -257,6 +283,16 @@ const Profile = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* Save Button Section */}
+          <div className="save-button-container">
+            <button className="save-button" onClick={handleSave}>
+              Save Profile
+            </button>
+            <button className="discard-button" onClick={handleDiscard}>
+              Discard Changes
+            </button>
           </div>
         </div>
       </div>
